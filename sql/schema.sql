@@ -1,0 +1,36 @@
+CREATE TABLE IF NOT EXISTS recurrences (
+  id INTEGER PRIMARY KEY,
+  start_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  stop_date DATE ,
+  rule TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS habits (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS habit_completions(
+  id INTEGER PRIMARY KEY,
+  habit_id INTEGER NOT NULL,
+  recurrence_id INTEGER NOT NULL UNIQUE,
+  FOREIGN KEY (habit_id) REFERENCES habits(id),
+  FOREIGN KEY (recurrence_id) REFERENCES recurrences(id)
+);
+
+CREATE TABLE IF NOT EXISTS tasks(
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS task_completions(
+  id INTEGER PRIMARY KEY,
+  habit_id INTEGER NOT NULL,
+  recurrence_id INTEGER NOT NULL UNIQUE,
+  FOREIGN KEY (habit_id) REFERENCES habits(id),
+  FOREIGN KEY (recurrence_id) REFERENCES recurrences(id)
+  
+);
+

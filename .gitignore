@@ -1,0 +1,5 @@
+db.sqlite3
+.lsp
+.cpcache
+.clj-kondo
+.nrepl-port
