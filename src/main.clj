@@ -1,42 +1,44 @@
-(ns main (:import [java.util Date]))
-(require '[next.jdbc :as jdbc]
-         '[clojure.string :as str])
+;; https://github.com/babashka/cli
+;; https://github.com/babashka/cli#spec
 
-(def db {:dbtype "sqlite" :dbname "db.sqlite3"})
-(def ds (jdbc/get-datasource db))
-(jdbc/execute! ds [(slurp "sql/schema.sql")])
+(ns main)
+(require '[babashka.cli :as cli]
+         '[db])
 
-(jdbc/execute! ds ["
-INSERT INTO habits (name) VALUES ('workout')
-"])
+(def entity->table
+  {"habit" "habits"
+   "expense" "expenses"
+   "task" "tasks"})
 
-(:habits/name (first (jdbc/execute! ds [" SELECT * FROM habits "])))
+(def sql-type->spec-type
+  {"INTEGER" :int
+   "TEXT" :string})
+
+(defn maybe [f]
+  (fn [v]
+    (or (f v) v)))
+
+(defn gen-spec [table]
+  (let [columns (->> table
+                     (db/column-metadata)
+                     (map #(select-keys % [:name :type :notnull]))
+                     (map #(update % :type (maybe sql-type->spec-type)))
+                     (map #(update % :name (maybe keyword)))
+                     )]
+    columns))
 
 (comment
-  (def args (str/split "quest add habit name:read" #"[\s]")))
+  (def *command-line-args* ["add" "--table" "habits" "--name" "read"])
+  (cli/parse-args *command-line-args* {:spec {:name :long}}))
 
-(defn usage []
-  (println "Usage: quest [command] [table] [column:value]"))
-
-(defn valid-table? [s]
-  (let [tables #{"habit" "task" "expense"}]
-    (contains? tables s)))
-
-(valid-table? "habit")
-
-(defn parse-args [args]
-  (into {}
-        (comp
-         (filter #(re-find #"^[a-zA-Z]+:[a-zA-Z]+$" %))
-         (map #(str/split % #":"))
-         (map (fn [[k v]] [(keyword k) v])))
-        args))
+(def dispatch-table
+  [{:cmds ["add"] :fn db/add :spec }
+   {:cmds ["delete"] :fn db/delete}
+   {:cmds [] :fn (fn [_] (println "Usage: add habit --name <str>"))}])
 
 (defn -main [args]
-  (case (second args)
-    ("add") (table-add)
-    ("delete" "del") ()
-    (usage)))
+  (cli/dispatch dispatch-table args))
 
-(-main args)
+(def *command-line-args* ["delete" "--table" "habits" "--name" "read"])
+(-main *command-line-args*)
 
