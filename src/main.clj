@@ -4,42 +4,37 @@
 (require '[babashka.cli :as cli]
          '[db])
 
-;
-; (declare parse-args)
-;
-; (defn -main [args]
-;   (parse-args args))
-
-(def cli->table
-  {"habit" "habits"
-   "expense" "expenses"
-   "task" "tasks"})
 
 
 (defn- sql-type->spec-type [type]
         (get {"INTEGER" :int "TEXT" :string} type type))
 
-(defn- gen-spec [table]
-  "Reads table metadata and extracts column name, type and if it is nullable"
-  (->> table
-         (db/column-metadata)
-         (map #(select-keys % [:name :type :notnull]))
-         (map #(update % :type sql-type->spec-type))
-         ))
+(def alias->table
+  {:habit :habits
+   :expense :expenses
+   :task :tasks})
+
+(defn- metadata->spec [{:keys [name type notnull dflt_value]}]
+                 [(keyword name)
+                  {:coerce (sql-type->spec-type type)
+                   :require (and (= notnull 1) (nil? dflt_value))
+                   :alias alias->table}])
+
+(defn gen-spec [table]
+  (let [table-metadata (db/column-metadata table)]
+    (into {} (map metadata->spec table-metadata))))
+
+
+
+(defn- parse-cli-args [[sub-command table-or-alias & args]]
+  (let [add-spec (gen-spec table-or-alias)]
+    (case sub-command
+      "add" (cli/parse-args args {:spec add-spec}))))
 
 (comment
-  (def *command-line-args* ["add" "--table" "habits" "--name" "read"])
-  (cli/parse-args *command-line-args* {:spec {:name :long}}))
-
-(def dispatch-table
-  [{:cmds ["add"] :fn db/add }
-   {:cmds ["delete"] :fn db/delete}
-   {:cmds [] :fn (fn [_] (println "Usage: add habit --name <str>"))}])
-
-(defn -main [args]
-  (cli/dispatch dispatch-table args))
-
-(comment (def *command-line-args* ["delete" "--table" "habits" "--name" "read"])
-         (cli/dispatch dispatch-table *command-line-args*)
-(-main *command-line-args*)
+  (gen-spec "habits")
+  (db/column-metadata "habits")
+  (def add-spec (gen-spec "habits"))
+  (cli/parse-args ["--name" "read"] {:spec {:name {:coerce :string :require true}}})
+  (parse-cli-args ["add" "habit" "--name" "read"]))
 
