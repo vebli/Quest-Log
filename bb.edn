@@ -1,3 +1,5 @@
 {:paths ["src"]
  :pods {org.babashka/go-sqlite3 {:version "0.2.3"}}
- :tasks {main main/-main}}
+ :tasks {main main/-main
+         deploy (shell "bash scripts/deploy.sh")}
+}

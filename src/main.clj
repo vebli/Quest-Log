@@ -1,44 +1,45 @@
 ;; https://github.com/babashka/cli
 ;; https://github.com/babashka/cli#spec
-
 (ns main)
 (require '[babashka.cli :as cli]
          '[db])
 
-(def entity->table
+;
+; (declare parse-args)
+;
+; (defn -main [args]
+;   (parse-args args))
+
+(def cli->table
   {"habit" "habits"
    "expense" "expenses"
    "task" "tasks"})
 
-(def sql-type->spec-type
-  {"INTEGER" :int
-   "TEXT" :string})
 
-(defn maybe [f]
-  (fn [v]
-    (or (f v) v)))
+(defn- sql-type->spec-type [type]
+        (get {"INTEGER" :int "TEXT" :string} type type))
 
-(defn gen-spec [table]
-  (let [columns (->> table
-                     (db/column-metadata)
-                     (map #(select-keys % [:name :type :notnull]))
-                     (map #(update % :type (maybe sql-type->spec-type)))
-                     (map #(update % :name (maybe keyword)))
-                     )]
-    columns))
+(defn- gen-spec [table]
+  "Reads table metadata and extracts column name, type and if it is nullable"
+  (->> table
+         (db/column-metadata)
+         (map #(select-keys % [:name :type :notnull]))
+         (map #(update % :type sql-type->spec-type))
+         ))
 
 (comment
   (def *command-line-args* ["add" "--table" "habits" "--name" "read"])
   (cli/parse-args *command-line-args* {:spec {:name :long}}))
 
 (def dispatch-table
-  [{:cmds ["add"] :fn db/add :spec }
+  [{:cmds ["add"] :fn db/add }
    {:cmds ["delete"] :fn db/delete}
    {:cmds [] :fn (fn [_] (println "Usage: add habit --name <str>"))}])
 
 (defn -main [args]
   (cli/dispatch dispatch-table args))
 
-(def *command-line-args* ["delete" "--table" "habits" "--name" "read"])
+(comment (def *command-line-args* ["delete" "--table" "habits" "--name" "read"])
+         (cli/dispatch dispatch-table *command-line-args*)
 (-main *command-line-args*)
 
