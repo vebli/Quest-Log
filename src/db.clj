@@ -1,5 +1,5 @@
-(ns db)
-(require '[pod.babashka.go-sqlite3 :as sqlite])
+(ns db
+  (:require [pod.babashka.go-sqlite3 :as sqlite]))
 
 (def db "db.sqlite3")
 
