@@ -1,5 +1,6 @@
 (ns db
-  (:require [pod.babashka.go-sqlite3 :as sqlite]))
+  (:require [pod.babashka.go-sqlite3 :as sqlite]
+            [clojure.string :as str]))
 
 (def db "db.sqlite3")
 
@@ -13,9 +14,16 @@
 (defn column-metadata [table]
   (query [(format "PRAGMA table_info(%s);" table)]))
 
-(defn add [args]
-  (println args))
 
-(defn delete [args])
+(defn- build-insert-query [{:keys [table opts]}]
+  (let [cols    (keys opts)
+        col-str (str/join ", " (map name cols))
+        ?-str  (str/join ", " (repeat (count cols) "?"))
+        sql-str (str "INSERT INTO " (name table) " (" col-str ") VALUES (" ?-str ")")]
+    (into [sql-str] (vals opts))))
 
-
+;; (defn execute-cmd! [{:keys [cmd table opts]}]
+;;   (let [param (...) ; generate (name, frequency, ...)
+;;         param-vals] (...) ; generate (?, ?, ...)
+;;     (case
+;;         ("]add") [(str "INSERT INTO habits" params "VALUES" param-vals)])))

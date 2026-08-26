@@ -1,5 +1,3 @@
-;; https://github.com/babashka/cli
-;; https://github.com/babashka/cli#spec
 (ns main
   (:require [db :as db]
             [cli :as cli]))
@@ -13,9 +11,12 @@
 ;;        :error e})))
 
 
-(def -main [args]
+(defn -main [args]
   (let [{:keys [ok value error]} (cli/parse-cli-args args)]
     (if ok
-      (db/execute! value)
+      ;; (db/execute! value)
+      (println value)
       (println error))))
 
+(comment
+  (-main ["add" "habit" "--name" "read"]))
