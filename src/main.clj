@@ -1,6 +1,7 @@
 (ns main
   (:require [db :as db]
-            [cli :as cli]))
+            [cli :as cli]
+            [commands :as cmd]))
 
 ;; (defn attempt [f & args]
 ;;   (try
@@ -10,13 +11,15 @@
 ;;       {:ok false
 ;;        :error e})))
 
+(add-tap (bound-fn* println))
 
 (defn -main [args]
-  (let [{:keys [ok value error]} (cli/parse-cli-args args)]
+  (let [{:keys [ok value error]} (cli/parse-args args)]
     (if ok
-      ;; (db/execute! value)
-      (println value)
+      (db/execute! (cmd/request->query value))
       (println error))))
 
 (comment
+  (def args ["add" "habit" "--name" "read" "--title"])
+  (cmd/request->query (:value (cli/parse-args args)))
   (-main ["add" "habit" "--name" "read"]))
