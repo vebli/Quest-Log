@@ -17,7 +17,7 @@
        (map metadata->spec)
        (into {})))
 
-(defn gen-insert-query [table cols]
+(defn gen-insert-query [{:keys [table cols]}]
   (let [col-keys    (keys cols)
         col-vals (vals cols)
         col-str (str/join ", " (map name col-keys))
@@ -31,12 +31,17 @@
 
 (def commands
   "spec-fn: function that generates spec, query-gen-fn: function that generates query vector"
-  { :add {:spec-fn insert-spec
-          :query-gen-fn gen-insert-query}
-   :delete {:spec-fn delete-spec
-            :query-gen-fn gen-delete-query}})
+  {:habits {:add {:spec-fn insert-spec
+                  :query-gen-fn gen-insert-query}
+            :delete {:spec-fn delete-spec
+                     :query-gen-fn gen-delete-query}
+            :list }
+   :tasks {:add {:spec-fn insert-spec
+                 :query-gen-fn gen-insert-query}
+           :delete {:spec-fn delete-spec
+                    :query-gen-fn gen-delete-query}}})
 
-(defn request->query [{:keys [cmd table cols]}]
+(defn request->query [{:keys [cmd] :as request} ]
   (let [query-fn (:query-gen-fn (get commands cmd))]
-    (query-fn table cols)))
+    (query-fn request)))
 

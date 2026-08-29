@@ -4,27 +4,31 @@
             [db :as db]
             [commands :as cmd]))
 
-(def ^:private alias->table
-  {:habit :habits
-   :expense :expenses
-   :task :tasks})
+(defn alias->table [alias]
+  (let [m {:habit :habits
+           :expense :expenses
+           :task :tasks}]
+    (m alias alias)))
+
 
 (defn parse-args [[command table & args]]
   (let [command (keyword command)
-        table (keyword table)
-        table (alias->table table table)
-        spec ((:spec-fn (cmd/commands command)) table)]
+        table (alias->table (keyword table))
+        table-exists (contains? cmd/commands table)
+        command-spec (get (get cmd/commands table) command)
+        command-exists-for-table (contains? (get cmd/commands table) command)]
     (cond
-      (not (contains? {:add :delete} command))
+      (not table-exists)
       {:ok false
-       :error (str "Unknown Command \"" command "\"")}
+       :error (format "Unknown table or alias \"%s\"" table)}
 
-      (empty? spec)
+      (not command-exists-for-table)
       {:ok false
-       :error (str "Unknown table or alias \"" (name table) "\"")}
+       :error (format "Table %s does not support command \"%s\"" table command)}
 
       :else
-      (let [column-names (db/column-names table) 
+      (let [column-names (db/column-names table)
+            spec ((:spec-fn command-spec) table)
             parsed-args (:opts (cli/parse-args args {:spec spec}))
             columns (select-keys parsed-args column-names)
             opts (apply dissoc parsed-args column-names)]
@@ -39,3 +43,4 @@
   (db/column-metadata "habits")
   (select-keys (:opts (cli/parse-args ["--name" "read"] {:spec {:name {:coerce :string :require true}}})) (db/column-names "habits"))
   (parse-args ["add" "habit" "--name" "read" "--test"]))
+

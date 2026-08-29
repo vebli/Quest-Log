@@ -1,7 +1,6 @@
 (ns db
   (:require [pod.babashka.go-sqlite3 :as sqlite]
-            [clojure.string :as str]
-            [commands :as cmd]))
+            [clojure.string :as str]))
 
 (def ^:private db "db.sqlite3")
 

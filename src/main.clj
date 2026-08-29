@@ -20,6 +20,8 @@
       (println error))))
 
 (comment
-  (def args ["add" "habit" "--name" "read" "--title"])
-  (cmd/request->query (:value (cli/parse-args args)))
-  (-main ["add" "habit" "--name" "read"]))
+  (def args ["add" "habit" "--name" "write" "--title"])
+  (def query (cmd/request->query (:value (cli/parse-args args))))
+  (db/execute! query)
+  (-main args))
+
