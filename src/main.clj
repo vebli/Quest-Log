@@ -21,7 +21,7 @@
 
 (comment
   (def args ["add" "habit" "--name" "write" "--title"])
+  (def args ["delete" "habit" "--id" "2"])
   (def query (cmd/request->query (:value (cli/parse-args args))))
-  (db/execute! query)
   (-main args))
 
