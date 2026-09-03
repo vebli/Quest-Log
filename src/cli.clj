@@ -11,34 +11,43 @@
     (m alias alias)))
 
 
-;; (defn parse-args [args] ())
 
-;; (defn parse-args [[command table & args]]
-;;   (let [command (keyword command)
-;;         table (alias->table (keyword table))
-;;         table-exists (contains? cmd/commands table)
-;;         command-spec (get (get cmd/commands table) command)
-;;         command-exists-for-table (contains? (get cmd/commands table) command)]
-;;     (cond
-;;       (not table-exists)
-;;       {:ok false
-;;        :error (format "Unknown table or alias \"%s\"" table)}
+(defn parse-args [[cmd table & rest]]
+        ())
 
-;;       (not command-exists-for-table)
-;;       {:ok false
-;;        :error (format "Table %s does not support command \"%s\"" table command)}
+(defn parse-args [[command table & args]]
+  (let [command (keyword command)
+        table (alias->table (keyword table))
+        table-exists (contains? cmd/commands table)
+        command-spec (get (get cmd/commands table) command)
+        command-exists-for-table (contains? (get cmd/commands table) command)]
+    (cond
+      (not table-exists)
+      {:ok false
+       :error (format "Unknown table or alias \"%s\"" table)}
 
-;;       :else
-;;       (let [column-names (db/column-names table)
-;;             spec ((:spec-fn command-spec) table)
-;;             parsed-args (:opts (cli/parse-args args {:spec spec}))
-;;             columns (select-keys parsed-args column-names)
-;;             opts (apply dissoc parsed-args column-names)]
-;;         {:ok true
-;;          :value {:cmd command
-;;                  :table table
-;;                  :cols columns
-;;                  :opts opts}}))))
+      (not command-exists-for-table)
+      {:ok false
+       :error (format "Table %s does not support command \"%s\"" table command)}
+
+      :else
+      (let [column-names (db/column-names table)
+            spec ((:spec-fn command-spec) table)
+            parsed-args (:opts (cli/parse-args args {:spec spec}))
+            columns (select-keys parsed-args column-names)
+            opts (apply dissoc parsed-args column-names)]
+        {:ok true
+         :value {:cmd command
+                 :table table
+                 :cols columns
+                 :opts opts}}))))
+
+(defmulti f (fn [x] x))
+(defmethod f :default [x] nil)
+(f 1)
+(f 1)
+(defmethod f [(= true (int? x))]
+  [x] (inc x))
 
 (comment
   (def columns (select-keys parsed-args column-names))

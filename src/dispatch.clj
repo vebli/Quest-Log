@@ -7,9 +7,13 @@
   (fn [{:keys [table cmd]}]
     [table cmd]))
 
+(defmethod table-spec :default [request] nil)
+
 (defmulti gen-query
   (fn [{:keys [table cmd]}]
     [table cmd]))
+
+(defmethod gen-query :default [request] nil)
 
 
 ;; (defn- metadata->spec [{:keys [name type notnull dflt_value]}]
