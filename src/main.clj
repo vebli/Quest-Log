@@ -11,13 +11,13 @@
 ;;       {:ok false
 ;;        :error e})))
 
-(add-tap (bound-fn* println))
+;; (add-tap (bound-fn* println))
 
-(defn -main [args]
-  (let [{:keys [ok value error]} (cli/parse-args args)]
-    (if ok
-      (db/execute! (cmd/request->query value))
-      (println error))))
+;; (defn -main [args]
+;;   (let [{:keys [ok value error]} (cli/parse-args args)]
+;;     (if ok
+;;       (db/execute! (cmd/request->query value))
+;;       (println error))))
 
 (comment
   (def args ["add" "habit" "--name" "write" "--title"])
