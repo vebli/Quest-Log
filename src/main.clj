@@ -3,15 +3,7 @@
             [cli :as cli]
             [commands :as cmd]))
 
-;; (defn attempt [f & args]
-;;   (try
-;;     {:ok true
-;;      :value (apply f args)}
-;;     (catch Exception e
-;;       {:ok false
-;;        :error e})))
-
-;; (add-tap (bound-fn* println))
+(add-tap (bound-fn* println))
 
 ;; (defn -main [args]
 ;;   (let [{:keys [ok value error]} (cli/parse-args args)]
