@@ -11,10 +11,19 @@
   "Execute query that modifies the database"
     (sqlite/execute! db query))
 
-(defn column-metadata [table]
-  (query [(format "PRAGMA table_info(%s);" (name table))]))
+(def valid-tables
+  #{:habits :expenses :tasks})
+
+(def column-metadata
+  (memoize
+   (fn [table]
+     (query [(format "PRAGMA table_info(%s);" (name table))]))))
+
 
 (defn column-names [table]
   "Returns column names as keys"
-  (map #(keyword (:name %)) (column-metadata table)))
+  (into #{} (map #(keyword (:name %)) (column-metadata table))))
+
+(defn has-column? [table col]
+  (contains? (column-names table) (keyword col)))
 

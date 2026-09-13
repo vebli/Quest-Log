@@ -1,5 +1,5 @@
 (ns domain.habits
-  (:require [domain.util.sql :as sql]
+  (:require [sql :as sql]
             [malli.core :as m]))
 
 ;; (defmethod table-spec [:habits :add]

@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     default_priority TEXT
         NOT NULL DEFAULT 2
         CHECK(default_priority IN (1, 2, 3)),
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
     recurrence_days TEXT, 
     recurrence_type TEXT 
@@ -26,17 +26,17 @@ CREATE TABLE IF NOT EXISTS tasks (
     recurrence_interval INTEGER 
         NOT NULL DEFAULT 1
         CHECK(recurrence_interval > 0),
-    recurrence_start_date TEXT, 
-    recurrence_end_date TEXT                        
+    recurrence_start_date DATE, 
+    recurrence_end_date DATE 
 );
 
 CREATE TABLE IF NOT EXISTS task_instances (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id INTEGER REFERENCES tasks(id) ON DELETE SET NULL,
-    scheduled_date TEXT NOT NULL,      
+    scheduled_date DATE NOT NULL,      
     priority INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'skipped')),
-    completed_at TEXT
+    completed_at DATE
 
     recurrence_days TEXT, 
     recurrence_type TEXT 
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS task_instances (
     recurrence_interval INTEGER 
         NOT NULL DEFAULT 1
         CHECK(recurrence_interval > 0),
-    recurrence_start_date TEXT, 
-    recurrence_end_date TEXT                        
+    recurrence_start_date DATE, 
+    recurrence_end_date DATE 
 );
 
 CREATE INDEX IF NOT EXISTS idx_task_instances_date ON task_instances(scheduled_date);
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS habits (
     target_count INTEGER NOT NULL DEFAULT 1,
     unit TEXT NOT NULL DEFAULT 'times', 
     -- recurrence_id INTEGER UNIQUE REFERENCES recurrence_rules(id) ON DELETE SET NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
     recurrence_days TEXT, 
     recurrence_type TEXT 
@@ -67,18 +67,18 @@ CREATE TABLE IF NOT EXISTS habits (
     recurrence_interval INTEGER 
         NOT NULL DEFAULT 1
         CHECK(recurrence_interval > 0),
-    recurrence_start_date TEXT, 
-    recurrence_end_date TEXT                        
+    recurrence_start_date DATE, 
+    recurrence_end_date DATE 
 );
 
 CREATE TABLE IF NOT EXISTS habit_instances (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     habit_id INTEGER REFERENCES habits(id) ON DELETE SET NULL,
-    scheduled_date TEXT NOT NULL,      
+    scheduled_date DATE NOT NULL,      
     current_count INTEGER NOT NULL DEFAULT 0,
     target_count INTEGER NOT NULL,    
     status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'skipped')),
-    completed_at TEXT
+    completed_at DATE 
 
     recurrence_days TEXT, 
     recurrence_type TEXT 
@@ -86,8 +86,8 @@ CREATE TABLE IF NOT EXISTS habit_instances (
     recurrence_interval INTEGER 
         NOT NULL DEFAULT 1
         CHECK(recurrence_interval > 0),
-    recurrence_start_date TEXT, 
-    recurrence_end_date TEXT                        
+    recurrence_start_date DATE, 
+    recurrence_end_date DATE 
 );
 
 CREATE INDEX IF NOT EXISTS idx_habit_instances_date ON habit_instances(scheduled_date);
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     category TEXT NOT NULL,
     default_amount_cents INTEGER NOT NULL,
     -- recurrence_id INTEGER UNIQUE REFERENCES recurrence_rules(id) ON DELETE SET NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
     recurrence_days TEXT, 
     recurrence_type TEXT 
@@ -109,17 +109,17 @@ CREATE TABLE IF NOT EXISTS expenses (
     recurrence_interval INTEGER 
         NOT NULL DEFAULT 1
         CHECK(recurrence_interval > 0),
-    recurrence_start_date TEXT, 
-    recurrence_end_date TEXT                        
+    recurrence_start_date DATE, 
+    recurrence_end_date DATE 
 );
 
 CREATE TABLE IF NOT EXISTS expense_instances (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     expense_id INTEGER REFERENCES expenses(id) ON DELETE SET NULL,
-    scheduled_date TEXT NOT NULL,      -- ISO8601 'YYYY-MM-DD'
+    scheduled_date DATE NOT NULL,      -- ISO8601 'YYYY-MM-DD'
     amount_cents INTEGER NOT NULL,     -- SNAPSHOT: Frozen cost for this instance
     status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'paid', 'skipped')),
-    paid_at TEXT
+    paid_at DATE
 );
 
 CREATE INDEX IF NOT EXISTS idx_expense_instances_date ON expense_instances(scheduled_date);

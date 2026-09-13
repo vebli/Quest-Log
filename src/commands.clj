@@ -3,13 +3,19 @@
             [clojure.string :as str]
             [domain.habits :as habits]))
 
+
 (defmulti table-spec
   (fn [{:keys [table cmd]}]
     [table cmd]))
 
+(defmethod table-spec :default [_] nil)
+
 (defmulti gen-query
   (fn [{:keys [table cmd]}]
     [table cmd]))
+
+(defmethod gen-query :default [_] nil)
+
 
 ;; (defn- metadata->spec [{:keys [name type notnull dflt_value]}]
 ;;   [(keyword name)
@@ -30,19 +36,6 @@
 ;;   (fn [{:keys [table]}]
 ;;     (let [sql-str (format "SELECT * FORM %s WHERE " table )])
 ;;     [sql-str, ]))
-
-;; (def commands
-;;   "spec-fn: request -> spec
-;;    query-gen-fn: table -> query vector"
-;;    :tasks {:add {:spec-fn gen-insert-spec
-;;                  :query-gen-fn gen-insert-query}
-;;            :delete {:spec-fn gen-delete-spec
-;;                     :query-gen-fn gen-delete-query}}})
-
-
-
-;; (defmethod commands
-;;   )
 
 
 (defn request->query [{:keys [cmd table] :as request} ]
