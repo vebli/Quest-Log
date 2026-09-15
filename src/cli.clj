@@ -1,57 +1,85 @@
-;; https://github.com/babashka/cli#spec
-(ns cli
-  (:require [babashka.cli :as cli]
-            [db :as db]
-            [commands :as cmd]))
+(ns decode
+  (:require [db :as db]
+            [util :as util]
+            [malli.core :as m]
+            [clojure.string :as str]
+            [malli.transform :as mt]
+            [malli.dev.pretty :as pretty]))
 
-(defn alias->table [alias]
-  (let [m {:habit :habits
+(def request-spec
+  [:map
+   [:cmd :keyword]
+   [:table :keyword]
+   [:cols [:map-of :keyword :string]]
+   [:opts [:map-of :keyword :string]]
+   ])
+
+(defn- gen-col-spec [table]
+  (->> table
+      (db/column-metadata)
+      (map (fn [x] [(:name x) (sql-type->malli-type (:type x))]))
+      (into [:map])
+      ))
+
+(println (gen-col-spec "habits"))
+
+(defn- parse-cli-opts [table opts]
+  (util/wherefn 
+   (-> (reduce #(parse-word table %1 %2)
+               {:prev-opt nil
+                :flags {}
+                :cols {}
+                :buffer []} opts)
+       (flush-option table)
+       (select-keys [:flags :cols]))
+
+   (flush-option [{:keys [prev-opt buffer] :as state} table]
+                 (if prev-opt
+                   (if (db/has-column? table prev-opt)
+                     (-> state
+                         (assoc-in [:cols prev-opt] buffer)
+                         (assoc :buffer (empty buffer)))
+                     (-> state
+                         (assoc-in [:flags prev-opt] buffer)
+                         (assoc :buffer (empty buffer))))
+                   state))
+
+   (start-option [table state option]
+                 (-> state
+                     (flush-option table)
+                     (assoc :prev-opt option)))
+   
+   (parse-word [table state word]
+               (if (str/starts-with? word "--")
+                 (start-option table state (keyword (subs word 2)))
+                 (update state :buffer conj word)))
+
+   (coerce-cols [{:keys [cols] :as parsed-opts}]
+                (let [coerced-cols (m/decode (gen-col-spec table) cols mt/string-transformer)]
+                  (assoc parsed-opts :cols coerced-cols)) )))
+
+
+(defn- table-alias->table [alias]
+  (let [alias (keyword alias)
+        m {:habit :habits
            :expense :expenses
            :task :tasks}]
-    (m alias alias)))
+    (get m alias alias))) 
+
+(defn parse-cli-args [[cmd table-or-alias & opts]]
+  (let [ table (table-alias->table table-or-alias)
+        cmd (keyword cmd)
+        {:keys [flags cols]} (parse-cli-opts table opts)
+        request {:cmd cmd :table table :cols cols :opts flags }]
+    request))
+
+
+(defn- sql-type->malli-type [type]
+  (let [m {:INTEGER :int
+           :TEXT :string
+           :DATE :inst}]
+    (get m type type)))
 
 
 
-(defn parse-args [[cmd table & rest]]
-        ())
-
-(defn parse-args [[command table & args]]
-  (let [command (keyword command)
-        table (alias->table (keyword table))
-        table-exists (contains? cmd/commands table)
-        command-spec (get (get cmd/commands table) command)
-        command-exists-for-table (contains? (get cmd/commands table) command)]
-    (cond
-      (not table-exists)
-      {:ok false
-       :error (format "Unknown table or alias \"%s\"" table)}
-
-      (not command-exists-for-table)
-      {:ok false
-       :error (format "Table %s does not support command \"%s\"" table command)}
-
-      :else
-      (let [column-names (db/column-names table)
-            spec ((:spec-fn command-spec) table)
-            parsed-args (:opts (cli/parse-args args {:spec spec}))
-            columns (select-keys parsed-args column-names)
-            opts (apply dissoc parsed-args column-names)]
-        {:ok true
-         :value {:cmd command
-                 :table table
-                 :cols columns
-                 :opts opts}}))))
-
-(defmulti f (fn [x] x))
-(defmethod f :default [x] nil)
-(f 1)
-(f 1)
-(defmethod f [(= true (int? x))]
-  [x] (inc x))
-
-(comment
-  (def columns (select-keys parsed-args column-names))
-  (db/column-metadata "habits")
-  (select-keys (:opts (cli/parse-args ["--name" "read"] {:spec {:name {:coerce :string :require true}}})) (db/column-names "habits"))
-  (cli/parse-args ["add" "habit" "--name" "--name=mo:tu:we" "more" "--r"]))
-
+(parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read"])
