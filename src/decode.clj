@@ -3,8 +3,7 @@
             [util :as util]
             [malli.core :as m]
             [clojure.string :as str]
-            [malli.transform :as mt]
-            [malli.dev.pretty :as pretty]))
+            [malli.transform :as mt]))
 
 (def request-spec
   [:map
@@ -14,14 +13,30 @@
    [:opts [:map-of :keyword :string]]
    ])
 
-(defn- gen-col-spec [table]
-  (->> table
-      (db/column-metadata)
-      (map (fn [x] [(:name x) (sql-type->malli-type (:type x))]))
-      (into [:map])
-      ))
+(defn- sql-type->malli-type [type]
+  (let [time [:fn #(instance? java.time.Instant %)]
+        m {:INTEGER :int
+           :TEXT :string
+           :DATE time}]
+    (get m type type)))
 
-(println (gen-col-spec "habits"))
+
+(defn- coerce-cols [{:keys [cols] :as parsed-opts}]
+  (util/wherefn 
+   (assoc parsed-opts :cols (coerce cols))
+
+   [(gen-col-schema [table]
+                    (->> table
+                         (db/column-metadata)
+                         (map (fn [x]
+                                [(keyword (:name x))
+                                 (sql-type->malli-type (keyword (:type x)))]))
+                         (into [:map])
+                         (m/schema)
+                         ))
+    (coerce [c] (m/decode (gen-col-schema table) c mt/string-transformer))]))
+
+(println (gen-col-schema "habits"))
 
 (defn- parse-cli-opts [table opts]
   (util/wherefn 
@@ -32,33 +47,29 @@
                 :buffer []} opts)
        (flush-option table)
        (select-keys [:flags :cols])
-       ;; (coerce-cols)
+       (coerce-cols)
        )
 
-   (flush-option [{:keys [prev-opt buffer] :as state} table]
-                 (let [key (if (db/has-column? table prev-opt) :cols :flags)]
-                   (if prev-opt
-                     (-> state
-                       (assoc :buffer (empty buffer))
-                       (assoc-in [key prev-opt] (first buffer))
-                       ;; remove 'first' to allow for vector of values
-                       ;; Maybe concat for strings?
-                       )
-                     state)))
+   [(flush-option [{:keys [prev-opt buffer] :as state} table]
+                  (let [key (if (db/has-column? table prev-opt) :cols :flags)]
+                    (if prev-opt
+                      (-> state
+                          (assoc :buffer (empty buffer))
+                          (assoc-in [key prev-opt] (first buffer))
+                          ;; remove 'first' to allow for vector of values
+                          ;; Maybe concat for strings?
+                          )
+                      state)))
 
-   (start-option [table state option]
-                 (-> state
-                     (flush-option table)
-                     (assoc :prev-opt option)))
-   
-   (parse-word [table state word]
-               (if (str/starts-with? word "--")
-                 (start-option table state (keyword (subs word 2)))
-                 (update state :buffer conj word)))
-
-   (coerce-cols [{:keys [cols] :as parsed-opts}]
-                (let [coerced-cols (m/decode (gen-col-spec table) cols mt/string-transformer)]
-                  (assoc parsed-opts :cols coerced-cols)) )
+    (start-option [table state option]
+                  (-> state
+                      (flush-option table)
+                      (assoc :prev-opt option)))
+    
+    (parse-word [table state word]
+                (if (str/starts-with? word "--")
+                  (start-option table state (keyword (subs word 2)))
+                  (update state :buffer conj word)))]
    ))
 
 
@@ -77,17 +88,19 @@
     request))
 
 
-(defn- sql-type->malli-type [type]
-  (let [time [:fn #(instance? java.time.Instant %)]
-        m {:INTEGER :int
-           :TEXT :string
-           :DATE time}]
-    (get m type type)))
 
 
 (comment
- (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--my-flag"])
+  (defn coerce-cols [{:keys [cols table] :as parsed-opts}]
+    (let [coerced-cols (m/decode (gen-col-schema table) cols mt/string-transformer)]
+      (assoc parsed-opts :cols coerced-cols)))
+ (coerce-cols (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--my-flag"]))
  (m/schema? (m/schema [:map [:id :int]]))
- (m/schema (gen-col-spec "habits"))
- (m/validate (gen-col-spec "habits") (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read"])))
+ (m/schema? (gen-col-schema "habits"))
+ (def table "habits")
+ (defn coerce-cols [{:keys [cols] :as parsed-opts}]
+              (let [coerced-cols (m/decode (gen-col-schema table) cols mt/string-transformer)]
+                (assoc parsed-opts :cols coerced-cols)))
+ (gen-col-spec "habits")
+ (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--target_count" 4]))
 

@@ -27,3 +27,24 @@
 (defn has-column? [table col]
   (contains? (column-names table) (keyword col)))
 
+
+(defn column-nullable? [table col]
+  (->> table
+       (column-metadata)
+       (some #(when (= (:name %) col)
+                (:notnull %)))
+       (zero?)
+       (not)
+       ))
+
+(defn column-has-default? [table col]
+  (->> table
+       (column-metadata)
+       (some #(when (= (:name %) col)
+                (:dflt_value %)))
+       (nil?)
+       (not)
+       ))
+
+(column-has-default? "habits" "id")
+(column-metadata "habits")

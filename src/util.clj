@@ -1,9 +1,9 @@
 (ns util)
 
-(defmacro where [body & fns]
-  `(letfn [~@fns]
+(defmacro where [body bindings]
+  `(let ~bindings
      ~body))
 
-(defmacro wherefn [body & fns]
-  `(letfn [~@fns]
+(defmacro wherefn [body bindings]
+  `(letfn ~bindings
      ~body))
