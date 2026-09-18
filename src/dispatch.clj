@@ -1,31 +1,22 @@
-(ns commands
+(ns dispatch 
   (:require [db :as db]
             [clojure.string :as str]
             [domain.habits :as habits]))
 
-(defmulti table-spec
+(defmulti request-schema
   (fn [{:keys [table cmd]}]
     [table cmd]))
 
-(defmethod table-spec :default [request] nil)
+(defmethod request-schema :default [request] nil)
 
-(defmulti gen-query
+(defmulti query
   (fn [{:keys [table cmd]}]
     [table cmd]))
 
-(defmethod gen-query :default [request] nil)
+(defmethod query :default [request] nil)
 
 
-;; (defn- metadata->spec [{:keys [name type notnull dflt_value]}]
-;;   [(keyword name)
-;;    {:coerce (sql-type->spec-type type)
-;;     :require (and (= notnull 1) (nil? dflt_value))}])
 
-;; (defn gen-insert-spec [table]
-;;   (->> (name table)
-;;        db/column-metadata
-;;        (map metadata->spec)
-;;        (into {})))
 
 
 ;; (defn gen-delete-spec [_]

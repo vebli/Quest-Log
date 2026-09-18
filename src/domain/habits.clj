@@ -1,20 +1,26 @@
 (ns domain.habits
   (:require [sql :as sql]
+            [schema :as schema]
+            [dispatch :as dis]
             [malli.core :as m]))
 
 ;; (defmethod table-spec [:habits :add]
 ;;   [request]
 ;;   ())
 
-(defmethod gen-query [:habits :add]
+(defmethod dis/request-schema [:habits :add]
   [request]
-  (sql/gen-insert-query request))
+  (schema/insertion (schema/col-base :habits)))
 
-(defmethod table-spec [:habits :delete])
-(defmethod gen-query [:habits :delete])
+;; (defmethod dis/query [:habits :add]
+;;   [request]
+;;   (sql/gen-insert-query request))
 
-(defmethod table-spec [:habits :list])
-(defmethod gen-query [:habits :list])
+;; (defmethod dis/request-schema [:habits :delete])
+;; (defmethod dis/query [:habits :delete])
+
+;; (defmethod table-spec [:habits :list])
+;; (defmethod gen-query [:habits :list])
 
 ;; (defn gen-list-query [{:keys [opts]}]
 ;;   ["SELECT "])

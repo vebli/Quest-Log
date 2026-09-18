@@ -1,5 +1,6 @@
 (ns decode
   (:require [db :as db]
+            [schema :as schema]
             [util :as util]
             [malli.core :as m]
             [clojure.string :as str]
@@ -13,30 +14,9 @@
    [:opts [:map-of :keyword :string]]
    ])
 
-(defn- sql-type->malli-type [type]
-  (let [time [:fn #(instance? java.time.Instant %)]
-        m {:INTEGER :int
-           :TEXT :string
-           :DATE time}]
-    (get m type type)))
 
-
-(defn- coerce-cols [{:keys [cols] :as parsed-opts}]
-  (util/wherefn 
-   (assoc parsed-opts :cols (coerce cols))
-
-   [(gen-col-schema [table]
-                    (->> table
-                         (db/column-metadata)
-                         (map (fn [x]
-                                [(keyword (:name x))
-                                 (sql-type->malli-type (keyword (:type x)))]))
-                         (into [:map])
-                         (m/schema)
-                         ))
-    (coerce [c] (m/decode (gen-col-schema table) c mt/string-transformer))]))
-
-(println (gen-col-schema "habits"))
+(defn- coerce-cols [table cols]
+  (m/decode (schema/col-base table) cols mt/string-transformer))
 
 (defn- parse-cli-opts [table opts]
   (util/wherefn 
@@ -47,7 +27,8 @@
                 :buffer []} opts)
        (flush-option table)
        (select-keys [:flags :cols])
-       (coerce-cols)
+       (into {:table table})
+       (update :cols #(coerce-cols table %))
        )
 
    [(flush-option [{:keys [prev-opt buffer] :as state} table]
@@ -87,20 +68,7 @@
         request {:cmd cmd :table table :cols cols :opts flags }]
     request))
 
-
-
-
 (comment
-  (defn coerce-cols [{:keys [cols table] :as parsed-opts}]
-    (let [coerced-cols (m/decode (gen-col-schema table) cols mt/string-transformer)]
-      (assoc parsed-opts :cols coerced-cols)))
- (coerce-cols (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--my-flag"]))
- (m/schema? (m/schema [:map [:id :int]]))
- (m/schema? (gen-col-schema "habits"))
- (def table "habits")
- (defn coerce-cols [{:keys [cols] :as parsed-opts}]
-              (let [coerced-cols (m/decode (gen-col-schema table) cols mt/string-transformer)]
-                (assoc parsed-opts :cols coerced-cols)))
- (gen-col-spec "habits")
  (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--target_count" 4]))
+
 

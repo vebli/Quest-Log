@@ -11,8 +11,8 @@
   "Execute query that modifies the database"
     (sqlite/execute! db query))
 
-(def valid-tables
-  #{:habits :expenses :tasks})
+;; (def valid-tables
+;;   #{:habits :expenses :tasks})
 
 (def column-metadata
   (memoize
@@ -37,14 +37,17 @@
        (not)
        ))
 
-(defn column-has-default? [table col]
+
+(defn column-default [table col]
+  "Return default value of column if exists otherwise returns nil"
   (->> table
        (column-metadata)
        (some #(when (= (:name %) col)
-                (:dflt_value %)))
-       (nil?)
-       (not)
-       ))
+                (:dflt_value %)))))
 
-(column-has-default? "habits" "id")
+(defn column-has-default? [table col]
+  (not (nil? (column-default table col))))
+
+(column-has-default? "habits" "created_at")
+(column-default "habits" "created_at")
 (column-metadata "habits")
