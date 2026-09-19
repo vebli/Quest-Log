@@ -18,12 +18,20 @@
 (defn rel-now [format offset]
   (.format (.plusDays (LocalDateTime/now) offset) format))
 
+
+(defn placeholder-str [count] (str "(" (str/join ", " (repeat count "?")) ")"))
+(defn param-str [params] (str "(" (str/join ", " (map name params)) ")"))
+
+(defn where-equals [cols]
+  (str "WHERE "
+   (str/join " AND "
+    (mapv (fn [[k v]] (str/join " " [(name k) "=" v]))
+          cols))))
+
 (defn gen-insert-query [{:keys [table cols]}]
   (let [col-keys    (keys cols)
         col-vals (vals cols)
-        col-str (str/join ", " (map name col-keys))
-        ?-str  (str/join ", " (repeat (count col-keys) "?"))
-        sql-str (str "INSERT INTO " (name table) " (" col-str ") VALUES (" ?-str ")")]
+        sql-str (str/join " " ["INSERT INTO" (name table)  (param-str col-keys) "VALUES" (placeholder-str (count col-keys))])]
     (into [sql-str] col-vals)))
 
 (defn gen-delete-query [{:keys [table cols]}]
