@@ -1,19 +1,31 @@
 (ns main
   (:require [db :as db]
-            [cli :as cli]
-            [commands :as cmd]))
+            [decode :as decode]
+            [dispatch :as dispatch]
+            [malli.core :as m]))
 
 (add-tap (bound-fn* println))
 
-;; (defn -main [args]
-;;   (let [{:keys [ok value error]} (cli/parse-args args)]
-;;     (if ok
-;;       (db/execute! (cmd/request->query value))
-;;       (println error))))
+(defn -main [args]
+  (let [{:keys [cmd table cols opts] :as request} (decode/parse-cli-args args)
+        schema (dispatch/schema request)
+        validation-result (m/validate schema request)
+        query (dispatch/query request)]
+    (if (true? validation-result)
+      (db/execute! query)
+      (m/explain validation-result))
+    )
+  )
+
 
 (comment
-  (def args ["add" "habit" "--name" "write" "--title"])
-  (def args ["delete" "habit" "--id" "2"])
-  (def query (cmd/request->query (:value (cli/parse-args args))))
-  (-main args))
+  (def args ["add" "habit" "--name" "read" "--description" "read book"])
+  (def request (decode/parse-cli-args args))
+  (def schema (dispatch/schema request))
+  (def validation-result (m/validate schema request))
+  (query (dispatch/query request))
+  (-main args)
+  )
+
+
 

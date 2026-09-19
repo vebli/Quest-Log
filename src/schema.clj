@@ -45,6 +45,8 @@
              cols)))
 
 (defn insertion [[k & cols]]
+  "Takes col-schema and sets :optional to false 
+for columns required for insertion"
   (into [k]
         (map
          (fn [[curr-col {:keys [notnull default]} type :as col]]

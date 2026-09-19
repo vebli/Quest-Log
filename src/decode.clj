@@ -28,9 +28,7 @@
        (flush-option table)
        (select-keys [:flags :cols])
        (into {:table table})
-       (update :cols #(coerce-cols table %))
-       )
-
+       (update :cols #(coerce-cols table %)))
    [(flush-option [{:keys [prev-opt buffer] :as state} table]
                   (let [key (if (db/has-column? table prev-opt) :cols :flags)]
                     (if prev-opt

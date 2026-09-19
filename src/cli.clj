@@ -14,6 +14,13 @@
    [:opts [:map-of :keyword :string]]
    ])
 
+
+(defn- sql-type->malli-type [type]
+  (let [m {:INTEGER :int
+           :TEXT :string
+           :DATE :inst}]
+    (get m type type)))
+
 (defn- gen-col-spec [table]
   (->> table
       (db/column-metadata)
@@ -33,7 +40,7 @@
        (flush-option table)
        (select-keys [:flags :cols]))
 
-   (flush-option [{:keys [prev-opt buffer] :as state} table]
+   [(flush-option [{:keys [prev-opt buffer] :as state} table]
                  (if prev-opt
                    (if (db/has-column? table prev-opt)
                      (-> state
@@ -56,7 +63,7 @@
 
    (coerce-cols [{:keys [cols] :as parsed-opts}]
                 (let [coerced-cols (m/decode (gen-col-spec table) cols mt/string-transformer)]
-                  (assoc parsed-opts :cols coerced-cols)) )))
+                  (assoc parsed-opts :cols coerced-cols)))]))
 
 
 (defn- table-alias->table [alias]
@@ -74,12 +81,3 @@
     request))
 
 
-(defn- sql-type->malli-type [type]
-  (let [m {:INTEGER :int
-           :TEXT :string
-           :DATE :inst}]
-    (get m type type)))
-
-
-
-(parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read"])

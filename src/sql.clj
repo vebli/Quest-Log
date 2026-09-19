@@ -1,4 +1,4 @@
-(ns domain.util.sql
+(ns sql
   (:require [clojure.string :as str])
   (:import [java.time LocalDateTime]
            [java.time.format DateTimeFormatter]))
