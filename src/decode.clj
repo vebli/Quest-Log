@@ -30,11 +30,15 @@
        (into {:table table})
        (update :cols #(coerce-cols table %)))
    [(flush-option [{:keys [prev-opt buffer] :as state} table]
-                  (let [key (if (db/has-column? table prev-opt) :cols :flags)]
+                  (let [is-col (db/has-column? table prev-opt)
+                        key (if is-col :cols :flags)
+                        opt-value (if (and (not is-col) (empty? buffer))
+                                 true
+                                 (first buffer))]
                     (if prev-opt
                       (-> state
+                          (assoc-in [key prev-opt] opt-value)
                           (assoc :buffer (empty buffer))
-                          (assoc-in [key prev-opt] (first buffer))
                           ;; remove 'first' to allow for vector of values
                           ;; Maybe concat for strings?
                           )
@@ -67,6 +71,6 @@
     request))
 
 (comment
- (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--target_count" 4]))
+ (parse-cli-args ["add" "habit" "--name" "my-habit" "--description" "read" "--target_count" 4 "--flag"]))
 
 

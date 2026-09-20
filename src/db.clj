@@ -48,6 +48,3 @@
 (defn column-has-default? [table col]
   (not (nil? (column-default table col))))
 
-(column-has-default? "habits" "created_at")
-(column-default "habits" "created_at")
-(column-metadata "habits")

@@ -12,18 +12,16 @@
         validation-result (m/validate schema request)
         query (dispatch/query request)]
     (if (true? validation-result)
-      (db/execute! query)
-      (m/explain validation-result))
-    )
-  )
+      (dispatch/display request (db/execute! query))
+      (m/explain validation-result))))
 
-
+(db/column-metadata :habits)
 (comment
-  (def args ["add" "habit" "--name" "read" "--description" "read book"])
+  (def args ["add" "habit" "--name" "read" "--description" "read book" "--hi"])
   (def request (decode/parse-cli-args args))
   (def schema (dispatch/schema request))
   (def validation-result (m/validate schema request))
-  (query (dispatch/query request))
+  (def query (dispatch/query request))
   (-main args)
   )
 

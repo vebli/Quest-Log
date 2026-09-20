@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS tasks (
         CHECK(default_priority IN (1, 2, 3)),
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
-    recurrence_days TEXT, 
+    recurrence_days INTEGER
     recurrence_type TEXT 
         CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')), 
     recurrence_interval INTEGER 
