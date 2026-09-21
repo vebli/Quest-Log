@@ -1,8 +1,11 @@
-(ns time)
-(def sqlite-datetime-fmt
+(ns time
+  (:import [java.time LocalDateTime]
+           [java.time.format DateTimeFormatter]))
+
+(def datetime-fmt
   (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss"))
 
-(def sqlite-date-fmt
+(def date-fmt
   (DateTimeFormatter/ofPattern "yyyy-MM-dd"))
 
 (defn now [format]

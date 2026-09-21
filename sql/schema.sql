@@ -15,19 +15,10 @@ CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     description TEXT,
-    default_priority TEXT
-        NOT NULL DEFAULT 2
-        CHECK(default_priority IN (1, 2, 3)),
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
-    recurrence_days INTEGER
-    recurrence_type TEXT 
-        CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')), 
-    recurrence_interval INTEGER 
-        NOT NULL DEFAULT 1
-        CHECK(recurrence_interval > 0),
-    recurrence_start_date DATE, 
-    recurrence_end_date DATE 
+    rec_type TEXT,
+    rec_data TEXT,
 );
 
 CREATE TABLE IF NOT EXISTS task_instances (
@@ -37,15 +28,8 @@ CREATE TABLE IF NOT EXISTS task_instances (
     priority INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'skipped')),
     completed_at DATE
-
-    recurrence_days TEXT, 
-    recurrence_type TEXT 
-        CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')), 
-    recurrence_interval INTEGER 
-        NOT NULL DEFAULT 1
-        CHECK(recurrence_interval > 0),
-    recurrence_start_date DATE, 
-    recurrence_end_date DATE 
+    rec_type TEXT,
+    rec_data TEXT,
 );
 
 CREATE INDEX IF NOT EXISTS idx_task_instances_date ON task_instances(scheduled_date);
@@ -58,17 +42,10 @@ CREATE TABLE IF NOT EXISTS habits (
     description TEXT,
     target_count INTEGER NOT NULL DEFAULT 1,
     unit TEXT NOT NULL DEFAULT 'times', 
-    -- recurrence_id INTEGER UNIQUE REFERENCES recurrence_rules(id) ON DELETE SET NULL,
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
-    recurrence_days TEXT, 
-    recurrence_type TEXT 
-        CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')), 
-    recurrence_interval INTEGER 
-        NOT NULL DEFAULT 1
-        CHECK(recurrence_interval > 0),
-    recurrence_start_date DATE, 
-    recurrence_end_date DATE 
+    rec_type TEXT,
+    rec_data TEXT,
 );
 
 CREATE TABLE IF NOT EXISTS habit_instances (
@@ -79,15 +56,6 @@ CREATE TABLE IF NOT EXISTS habit_instances (
     target_count INTEGER NOT NULL,    
     status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'skipped')),
     completed_at DATE 
-
-    recurrence_days TEXT, 
-    recurrence_type TEXT 
-        CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')), 
-    recurrence_interval INTEGER 
-        NOT NULL DEFAULT 1
-        CHECK(recurrence_interval > 0),
-    recurrence_start_date DATE, 
-    recurrence_end_date DATE 
 );
 
 CREATE INDEX IF NOT EXISTS idx_habit_instances_date ON habit_instances(scheduled_date);
@@ -100,17 +68,10 @@ CREATE TABLE IF NOT EXISTS expenses (
     description TEXT,
     category TEXT NOT NULL,
     default_amount_cents INTEGER NOT NULL,
-    -- recurrence_id INTEGER UNIQUE REFERENCES recurrence_rules(id) ON DELETE SET NULL,
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
 
-    recurrence_days TEXT, 
-    recurrence_type TEXT 
-        CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')), 
-    recurrence_interval INTEGER 
-        NOT NULL DEFAULT 1
-        CHECK(recurrence_interval > 0),
-    recurrence_start_date DATE, 
-    recurrence_end_date DATE 
+    rec_type TEXT,
+    rec_data TEXT,
 );
 
 CREATE TABLE IF NOT EXISTS expense_instances (

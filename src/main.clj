@@ -15,7 +15,6 @@
       (dispatch/display request (db/execute! query))
       (m/explain validation-result))))
 
-(db/column-metadata :habits)
 (comment
   (def args ["add" "habit" "--name" "read" "--description" "read book" "--hi"])
   (def request (decode/parse-cli-args args))

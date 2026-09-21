@@ -1,12 +1,12 @@
-(ns schema
+(ns schema.db
   (:require [db :as db]
+            [schema.util :as s-util]
             [malli.core :as m]))
 
 (defn- sql-type->malli-type [type]
-  (let [time [:fn #(instance? java.time.Instant %)]
-        m {:INTEGER :int
+  (let [m {:INTEGER :int
            :TEXT :string
-           :DATE time}]
+           :DATE s-util/inst}]
     (get m type type)))
 
 (defn col-base [table]
