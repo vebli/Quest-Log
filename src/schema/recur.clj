@@ -8,6 +8,6 @@
      [:freq periods]
      [:start s-util/inst]
      [:end s-util/inst]
-     [:interval :int] 
-     [:days [:vector :int]]
+     [:gap :int] 
+     [:offsets [:vector :int]]
      ]))
