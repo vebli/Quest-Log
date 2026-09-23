@@ -1,3 +1,9 @@
 (ns schema.util)
 
-(def inst [:fn #(instance? java.time.Instant %)])
+(def local-date [:fn #(instance? java.time.LocalDate %)])
+
+(def local-date-time [:fn #(instance? java.time.LocalDateTime %)])
+
+(defn enum-range [& args]
+  (into [:enum] (apply range args)))
+

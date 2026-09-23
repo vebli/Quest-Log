@@ -1,6 +1,6 @@
 (ns dispatch 
   (:require [db :as db]
-            [schema :as schema]
+            [schema.db :as schema]
             [clojure.string :as str]))
 
 (defmulti schema

@@ -1,16 +1,14 @@
 (ns recur
   (:require [malli.core :as m]
-            [time :as time]
+            [tick.core :as t]
             [util :as util]
             [schema.recur :as schema])
-  (:import [java.time LocalDateTime DayOfWeek]
+  (:import [java.time DayOfWeek]
            [java.time.temporal TemporalAdjusters WeekFields]))
 
-(defmulti occurrences
-  "Returns lazy sequence of occurrence dates"
-  (fn [type data] type))
 
-(defmethod occurrences :default [_ _] nil)
+(defmulti occurrences
+  (fn [type data] type))
 
 (defn periodic-seq
   [start end offsets step-fn]
@@ -18,13 +16,16 @@
        (take-while #(.isAfter end %))
        (mapcat (fn [period-start]
                  (map #(.plusDays period-start (- % 1))
-                         offsets)))
+                      offsets)))
        (drop-while #(.isBefore % start))
        (take-while #(.isAfter end %))))
 
+
 (defmethod occurrences :weekly
   [_ {:keys [start end offsets gap] :as data}]
-  (let [week-start (.with start (TemporalAdjusters/previousOrSame DayOfWeek/MONDAY))
+  (let [week-start (t/truncate
+                    start
+                    (TemporalAdjusters/previousOrSame DayOfWeek/MONDAY))
         step-fn #(.plusWeeks % gap)]
     (periodic-seq week-start end offsets step-fn)))
 
@@ -50,3 +51,4 @@
               (.plusYears (LocalDateTime/now) 1)
               [1 3]
               #(.plusMonths % 1)))))
+

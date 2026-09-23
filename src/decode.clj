@@ -1,6 +1,6 @@
 (ns decode
   (:require [db :as db]
-            [schema :as schema]
+            [schema.db :as schema]
             [util :as util]
             [malli.core :as m]
             [clojure.string :as str]
@@ -13,7 +13,6 @@
    [:cols [:map-of :keyword :string]]
    [:opts [:map-of :keyword :string]]
    ])
-
 
 (defn- coerce-cols [table cols]
   (m/decode (schema/col-base table) cols mt/string-transformer))
@@ -52,9 +51,7 @@
     (parse-word [table state word]
                 (if (str/starts-with? word "--")
                   (start-option table state (keyword (subs word 2)))
-                  (update state :buffer conj word)))]
-   ))
-
+                  (update state :buffer conj word)))]))
 
 (defn- table-alias->table [alias]
   (let [alias (keyword alias)

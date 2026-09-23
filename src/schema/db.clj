@@ -6,7 +6,7 @@
 (defn- sql-type->malli-type [type]
   (let [m {:INTEGER :int
            :TEXT :string
-           :DATE s-util/inst}]
+           :DATE s-util/local-date-time}]
     (get m type type)))
 
 (defn col-base [table]
