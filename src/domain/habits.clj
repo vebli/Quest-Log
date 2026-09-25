@@ -2,7 +2,7 @@
   (:require [sql :as sql]
             [honey.sql :as hsql]
             [honey.sql.helpers :as hsqlh]
-            [schema.db :as schema]
+            [db.schema :as schema]
             [clojure.pprint :refer [print-table]]
             [dispatch :as d]
             [malli.core :as m]))

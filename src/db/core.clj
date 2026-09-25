@@ -1,4 +1,4 @@
-(ns db
+(ns db.core
   (:require [pod.babashka.go-sqlite3 :as sqlite]
             [clojure.string :as str]))
 

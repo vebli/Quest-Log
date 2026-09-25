@@ -1,6 +1,6 @@
 (ns decode
-  (:require [db :as db]
-            [schema.db :as schema]
+  (:require [db.core :as db]
+            [db.schema :as schema]
             [util :as util]
             [malli.core :as m]
             [clojure.string :as str]

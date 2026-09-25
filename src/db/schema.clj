@@ -1,5 +1,5 @@
-(ns schema.db
-  (:require [db :as db]
+(ns db.schema
+  (:require [db.core :as db]
             [schema.util :as s-util]
             [malli.core :as m]))
 

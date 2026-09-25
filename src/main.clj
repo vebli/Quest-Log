@@ -1,5 +1,5 @@
 (ns main
-  (:require [db :as db]
+  (:require [db.core :as db]
             [decode :as decode]
             [dispatch :as dispatch]
             [malli.core :as m]))

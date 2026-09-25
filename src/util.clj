@@ -21,11 +21,3 @@
        (declare ~@deps)
        (defn ~name ~args ~@body))))
 
-
-(defn-fw f [x]
-  :uses [my-i]
-  (my-inc x))
-
-(defn- my-i [x] (+ x 1))
-
-(f 1)
